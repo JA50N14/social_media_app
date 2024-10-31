@@ -1,0 +1,10 @@
+<div id="comment-reply-container-{{ comment.id }}">
+    {% for reply in all_comment_replies %}
+        <div id="reply-{{ comment.id }}">
+            <p><strong>{{ reply.user.username }}</strong> | 
+                <span id="comment-like-container-{{ reply.id }}">{% include 'partials/comment_like.html' with comment=reply post=post %}</span>
+            </p>
+            <p>{{ reply.comment_text }}</p>
+        </div>
+    {% endfor %}
+</div>

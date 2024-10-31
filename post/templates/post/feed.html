@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Your Main Feed{% endblock %}
+
+{% block content %}
+<div class="feed-container">
+    <div class="post-box">
+        <div class="username">User1</div>
+        <img src="path-to-image1.jpg" alt="Post Image 1">
+        <a href="post-detail-url1" class="details-link">View Post</a>
+        <div class="post-text">This is the text for post 1.</div>
+    </div>
+    <div class="post-box">
+        <div class="username">User2</div>
+        <img src="path-to-image2.jpg" alt="Post Image 2">
+        <a href="post-detail-url2" class="details-link">View Post</a>
+        <div class="post-text">This is the text for post 2.</div>
+    </div>
+    <div class="post-box">
+        <div class="username">User3</div>
+        <img src="path-to-image3.jpg" alt="Post Image 3">
+        <a href="post-detail-url3" class="details-link">View Post</a>
+        <div class="post-text">This is the text for post 3.</div>
+    </div>
+</div>
+{% endblock %}

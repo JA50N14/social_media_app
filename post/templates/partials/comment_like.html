@@ -1,0 +1,10 @@
+<span id="comment-like-container-{{ comment.id }}">
+    <button id="comment-like-{{ comment.id }}" hx-post="{% url 'post:comment_like' post.id comment.id %}" hx-target="#comment-like-container-{{ comment.id }}" hx-swap="outerHTML">
+        {% if comment.user_liked %}
+            Unlike
+        {% else %}
+            Like
+        {% endif %}
+    </button>
+    | {{ comment.count_likes }}
+</span>

@@ -1,0 +1,5 @@
+<form hx-post="{% url 'post:comment_reply' post_id comment_id %}" hx-target="#comment-reply-container-{{ comment_id }}" hx-swap="innerHTML" hx-on:htmx:after-request="document.querySelector('#replies-button-{{ comment_id }}').innerText = '--Hide Replies'; this.reset(); this.remove();">
+    {{ comment_reply_form.as_p }}
+    {% csrf_token %}
+    <input type="submit" value="Submit">
+</form>

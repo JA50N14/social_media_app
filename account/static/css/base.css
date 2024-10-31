@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
@@ -24,6 +25,7 @@ body {
     max-height: 50px;
 }
 
+
 /* Navigation Link Styling */
 .nav-links ul {
     list-style: none;
@@ -38,6 +40,27 @@ body {
     padding: 10px 15px;
 }
 
+/* Register Form */
+.logout-button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 0.4;
+    text-decoration: none;
+}
+
+/*Hover effect for logout button */
+.logout-button:hover {
+    background-color: #555;
+    border-radius: 5px;
+}
+
+
 .nav-links ul li a:hover {
     background-color: #555;
     border-radius: 5px;
@@ -50,4 +73,168 @@ footer {
     padding: 10px 0;
     background-color: #333;
     color: white;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10vh;
+    margin: 0;
+}
+
+/* Post Detail */
+.center-box {
+    display: flex;
+    justify-content: center;     /*Centered horizontally in the container*/
+    align-items: center;        /*Centered vertically in the container */
+    margin-top: 20px;
+}
+
+.center-box .box-content {
+    display: flex;
+    flex-direction: column;     /* Items are laid out in a column (Each on top of each other)*/
+    align-items: center;
+    width: 80%;                /* Adjust the box width */
+    max-width: 800px;           /* Limit the maximum width */
+    padding: 50px;
+    background-color: #f9f9f9;
+    border: 6px solid #000;     /* Black border */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#detail-post-like-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+
+/*Style for the comments section container */
+#comments-section {
+    background-color: #f0f0f0;    /* Light grey background */
+    border-radius: 8px;           /* Rounded corners */
+    padding: 20px;                /* Padding inside the section */
+    margin-top: 20px;             /* Space from the top */
+    max-width: 700px;             /* Maximum width of the comments section */
+    margin-left: auto;            /* Center horizontally */
+    margin-right: auto;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+
+}
+
+/*General styling for each individual comment */
+.comment {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #ffffff;    /* White background for comments */
+    border: 1px solid #ddd;       /* Light grey border around comments */
+    padding: 15px;                /* Padding inside the comment box */
+    margin-bottom: 15px;          /* Space between comments */
+    border-radius: 6px;           /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+
+
+/* Posts on Profiles & Feed Page */
+#post-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10%;
+    padding: 0 15%;
+}
+
+.post-box {
+    flex: 1 1 calc(50% - 5%);
+    max-width: calc(50% - 5%);
+    box-sizing: border-box;
+    max-height: 40%;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border: 6px solid #000;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+
+
+
+
+
+
+
+/* Feed page styling */
+.feed-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+@media (max-width: 1200px) {
+    .feed-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 posts per row on medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .feed-container {
+        grid-template-columns: 1fr; /* 1 post per row on small screens */
+    }
+}
+
+/* Each post box */
+.post-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 300px; /* Ensure uniform width for each box */
+    text-align: center;
+}
+
+/* Username above the image */
+.post-box .username {
+    text-align: left;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Image inside the post box */
+.post-box img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Link to detailed view */
+.post-box .details-link {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+}
+
+.post-box .details-link:hover {
+    color: #007BFF;
+    text-decoration: underline;
+}
+
+/* Post text below the detailed view link */
+.post-box .post-text {
+    text-align: left;
+    font-size: 14px;
+    color: #555;
 }

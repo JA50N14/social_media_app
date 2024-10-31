@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <title>{% block title %} {% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -25,7 +26,7 @@
                     <li>
                         <form action="{% url 'logout' %}" method="post">
                             {% csrf_token %}
-                            <input type="submit" value="Logout">
+                            <input class="logout-button" type="submit" value="Logout">
                         </form>
                     </li>
                 {% else %}
@@ -37,5 +38,7 @@
     </header>
 
     {% block content %} {% endblock %}
+    {% block include_js %} {% endblock %}
+
 </body>
 </html>

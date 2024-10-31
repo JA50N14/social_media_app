@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <h5 class="center">
+        <strong>{{ request.user.username }}   <a href="{% url 'post:post-create' %}">Make a Post?</a>   Posts | Followers | Following</strong>
+    </h5>
+
+    <div id="post-container">
+        <div class="post-box">
+            
+        </div>
+    </div>
+
+
+{% endblock %}

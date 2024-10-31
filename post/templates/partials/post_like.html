@@ -1,0 +1,9 @@
+<button id="post-like-button-{{ post.id }}" hx-post="{% url 'post:post_like' post.id %}" hx-target="#detail-post-like-section" hx-swap="inerHTML">
+    {% if not user_like_post.like %}
+        Like
+    {% else %}
+        Unlike
+    {% endif %}
+</button>
+<p><strong>|</strong></p>
+<p><strong>{{ post.count_likes }}</strong></p>
