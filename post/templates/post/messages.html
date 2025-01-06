@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+    <div id="follow-header-container">
+        <div class="follow-header-box">
+            <h3>Messages</h3>
+        </div>
+    </div>
+    <div class="center-box">
+        <div class="box-content">
+            <h1>{{ request.user.username }}</h1>
+            <br>
+            <h4>Search</h4>
+            <br>
+            {% if not user_chats %}
+                <p>No messages yet.</p>
+            {% else %}
+                {% for message in user_chats %}
+                    <a class="custom-link" href="{% url 'chat:chat_view' message.chat_with_id %}">
+                        <p>
+                            {{ message.chat_with_first_name }} {{ message.chat_with_last_name }}
+                            <br>
+                            <span style="color: gray; {% if message.is_new %}font-weight: bold;{% endif %}">{{ message.latest_message }}</span>
+                        </p>
+                    </a>
+                    <br>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

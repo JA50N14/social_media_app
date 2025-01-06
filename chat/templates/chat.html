@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+<h1 class="center">{{ chat_with.username }}</h1>
+
+<div class="chat-box">
+    <div class="chat-content">
+        {% for message in historic_messages %}
+            {% if message.sender == request.user %}
+                <div class="chat-message message-sent">{{ message.content }}</div>
+            {% else %}
+                <div class="chat-message message-received">{{ message.content }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="chat-input">
+    <input id="chat-message-input" type="text" placeholder="Type your message...">
+    <button id="chat-message-submit">Send</button>
+</div>
+
+{{ chat_group_id|json_script:"chat_group_id" }}
+{{ chat_with.id|json_script:"chat_with_id" }}
+{{ request.user.username|json_script:"request_username" }}
+
+<script>
+    const chatGroupID = JSON.parse(document.getElementById('chat_group_id').textContent);
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + chatGroupID
+        + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.message === "ping") {
+            chatSocket.send(JSON.stringify({
+                'message': "pong"
+            }));
+        } else {
+        chatContent = document.querySelector('.chat-content');
+        const requestUsername = JSON.parse(document.getElementById('request_username').textContent);
+
+        //Create new div for the message
+        const newMessageDiv = document.createElement('div');
+        newMessageDiv.classList.add('chat-message');
+
+        //Check if the message is sent by the current user
+        if (data.sender === requestUsername) {
+            newMessageDiv.classList.add('message-sent');
+        } else {
+            newMessageDiv.classList.add('message-received');
+        }
+
+        //Set content of new message
+        newMessageDiv.textContent = data.message;
+
+        //Append new message to chat-content container
+        chatContent.appendChild(newMessageDiv);
+
+        //Scroll to bottom to show new message
+        chatContent.scrollTop = chatContent.scrollHeight;
+        }
+    };
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        const chatWithID = JSON.parse(document.getElementById('chat_with_id').textContent);
+        chatSocket.send(JSON.stringify({
+            'message': message,
+            'chat_with_id': chatWithID
+        }));
+        messageInputDom.value = '';
+    };
+
+    //chat-content scrolled to bottom when page renders
+    document.addEventListener("DOMContentLoaded", function () {
+        const chatContent = document.querySelector('.chat-content');
+        if (chatContent) {
+            chatContent.scrollTop = chatContent.scrollHeight;
+        }
+    });
+</script>
+
+{% endblock %}

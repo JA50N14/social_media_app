@@ -1,0 +1,9 @@
+<button hx-post="{% url 'post:follow_unfollow_user' user_id other_user_id %}" hx-target="#follow-unfollow" hx-swap="innerHTML" hx-on:htmx:load="document.querySelector('#follower_count').innerText = {{ follower_count }};">
+    {% if following_user and not following_user.following %}
+        Follow
+    {% elif following_user %}
+        Unfollow
+    {% else %}
+        Follow
+    {% endif %}
+</button>

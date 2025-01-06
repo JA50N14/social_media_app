@@ -31,10 +31,11 @@ class Comment(models.Model):
 
     def get_all_replies(self):
         return self.replies.all().order_by('-created')[:15]
-    
+
 
 class Like(models.Model):
     post = models.ForeignKey(Post, related_name='likes', on_delete=models.CASCADE, null=True, blank=True)
+    profile = models.ForeignKey('account.Profile', related_name='likes', on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='likes', on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, related_name='likes', on_delete=models.CASCADE, blank=True, null=True)
     like = models.BooleanField(default=False)
@@ -47,7 +48,3 @@ class Follow(models.Model):
     user_from = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follower', on_delete=models.CASCADE)
     user_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='following', on_delete=models.CASCADE)
     following = models.BooleanField(default=True)
-    
-
-
-

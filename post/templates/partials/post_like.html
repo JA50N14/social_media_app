@@ -1,9 +1,10 @@
-<button id="post-like-button-{{ post.id }}" hx-post="{% url 'post:post_like' post.id %}" hx-target="#detail-post-like-section" hx-swap="inerHTML">
-    {% if not user_like_post.like %}
-        Like
-    {% else %}
-        Unlike
-    {% endif %}
-</button>
-<p><strong>|</strong></p>
-<p><strong>{{ post.count_likes }}</strong></p>
+<div class="post-like-{{ post.id }}" hx-target=".post-like-{{ post.id }}" hx-swap="innerHTML"> 
+    <button id="post-like-button-{{ post.id }}" hx-post="{% url 'post:post_like' post.id %}" hx-target=".post-like-{{ post.id }}" hx-swap="outerHTML">
+        {% if post_like_status %}
+            Unlike
+        {% else %}
+            Like
+        {% endif %}
+    </button>
+    <strong>| {{ post.count_likes }}</strong>
+</div>

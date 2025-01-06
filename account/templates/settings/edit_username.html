@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Username{% endblock %}
+
+{% block content %}
+    <h1>Edit Username</h1>
+    <form action="{% url 'edit_username' %}" method="post">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <input type="submit" value="Update Username">
+    </form>
+{% endblock %}

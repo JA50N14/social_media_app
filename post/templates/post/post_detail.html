@@ -7,11 +7,16 @@
     <h1 class="center">Post Detail</h1>
     <div class="center-box">
         <div class="box-content">
+            <span>
+                <a class="custom-link" href="{% url 'post:detail_profile_view' user.id %}"><strong>To User Profile</strong></a> | 
+                <a class="custom-link" href="{% url 'post:feed' %}"><strong>To Home Feed</strong></a>
+            </span>
+            <br>
             <h2>{{ post.user.username }}</h2>
             <br>
             <img src="{{ post.photo.url }}"/>
             <div id="detail-post-like-section">
-                {% include 'partials/post_like.html' with user_like_post=user_like_post %}
+                <p id="post-like-{{ post.id }}">{% include 'partials/post_like.html' with post_like_status=post_like_status %}</p>
             </div>
             <p>{{ post.caption }}</p>
             <br>

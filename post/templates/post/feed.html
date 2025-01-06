@@ -3,24 +3,32 @@
 {% block title %}Your Main Feed{% endblock %}
 
 {% block content %}
-<div class="feed-container">
-    <div class="post-box">
-        <div class="username">User1</div>
-        <img src="path-to-image1.jpg" alt="Post Image 1">
-        <a href="post-detail-url1" class="details-link">View Post</a>
-        <div class="post-text">This is the text for post 1.</div>
+    <br>
+    <h1 style="text-align: center;">{{ request.user.username }}</h1>
+    <br>
+    <div id="post-feed-container">
+        {% if page_obj %}
+            {% for post in page_obj %}
+                <div class="post-box">
+                    <a class="custom-link" href="{% url 'post:post_detail' post.id %}">
+                        <img src="{{ post.photo.url }}">
+                    </a>
+                    <div id="detail-post-like-section">
+                        <div class="post-like-{{ post.id }}">
+                            {% include 'partials/post_like.html' with post_like_status=post.post_like_status %}
+                        </div>
+                    </div>
+                    <p><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h1 style="text-align:center;">No Posts yet.</h1>
+        {% endif %}
     </div>
-    <div class="post-box">
-        <div class="username">User2</div>
-        <img src="path-to-image2.jpg" alt="Post Image 2">
-        <a href="post-detail-url2" class="details-link">View Post</a>
-        <div class="post-text">This is the text for post 2.</div>
+    <div class="pagination-container">
+        {% if page_obj.has_next %}
+            <span hx-get="{% url 'post:feed' %}?page={{ page_obj.next_page_number }}" hx-trigger="revealed" hx-target="#post-feed-container" hx-swap="beforeend" hx-select=".pagination-container, .post-box"></span>
+        {% endif %}
     </div>
-    <div class="post-box">
-        <div class="username">User3</div>
-        <img src="path-to-image3.jpg" alt="Post Image 3">
-        <a href="post-detail-url3" class="details-link">View Post</a>
-        <div class="post-text">This is the text for post 3.</div>
-    </div>
-</div>
+
 {% endblock %}

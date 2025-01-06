@@ -27,12 +27,14 @@ SECRET_KEY = 'django-insecure-j8#8(7)i3%*c+r4-6xi-&1ocgsgp61*40h3s(r-!u*m#h)g^%x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'chat',
     'account',
     'post',
     'django.contrib.admin',
@@ -74,7 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'social.wsgi.application'
-
+ASGI_APPLICATION = 'social.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -144,3 +146,13 @@ DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER')
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}

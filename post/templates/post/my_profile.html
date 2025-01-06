@@ -1,17 +1,60 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-    <h5 class="center">
-        <strong>{{ request.user.username }}   <a href="{% url 'post:post-create' %}">Make a Post?</a>   Posts | Followers | Following</strong>
-    </h5>
-
-    <div id="post-container">
-        <div class="post-box">
-            
+    <div id="profile-header-container">
+        <div class="profile-header-box">
+            <h3><strong>{{ request.user.username }}</strong></h3>
+        </div>
+        <div class="profile-header-box">
+            <h3><a class="custom-link" href="{% url 'post:post_create' %}">Make a Post?</a></h3>
+        </div>
+        <div class="profile-header-box">
+            <h3>Posts: {{ post_count }}</h3>
+        </div>
+        <div class="profile-header-box">
+            <h3><a class="custom-link" href="{% url 'post:followers_following_view' request.user.id 'followers' %}">Followers: {{ follower_count }}</a></h3>
+        </div>
+        <div class="profile-header-box">
+            <h3><a class="custom-link" href="{% url 'post:followers_following_view' request.user.id 'following' %}">Following: {{ following_count }}</a></h3>
         </div>
     </div>
 
+    <div id="post-container">
+        <div class="post-box-profile-photo">
+            {% if profile != None and profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}">
+            {% else %}
+                <img style="object-fit: contain;" src="{% static 'account/default_profile_photo.png' %}" alt="profile photo">
+            {% endif %}
+            {% if profile != None and profile.bio %}
+                <p><strong>Bio</strong> {{ profile.bio }}</p>
+            {% else %}
+                <p style="font-weight: lighter; color: gray" >No Bio yet.</p>
+            {% endif %}
+        </div>
+
+        {% if page_obj %}
+            {% for post in page_obj %}
+                <div class="post-box">
+                    <a class="custom-link" href="{% url 'post:post_detail' post.id %}">
+                        <img src="{{ post.photo.url }}">
+                    </a>
+                        <p><strong>Likes: {{ post.count_likes }}</strong></p>
+                    <p><strong>{{ request.user.username }}</strong> {{ post.caption }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div class="pagination-container">
+        {% if page_obj.has_next %}
+            <span hx-get="{% url 'post:my_profile' %}?page={{ page_obj.next_page_number }}" hx-target="#post-container" hx-trigger="revealed" hx-swap="beforeend" hx-select=".pagination-container, .post-box"></span>
+        {% endif %}
+    </div>
+    
+    
+    
 
 {% endblock %}

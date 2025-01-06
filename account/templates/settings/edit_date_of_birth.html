@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Date of Birth{% endblock %}
+
+{% block content %}
+    <h1>Edit Date of Birth</h1>
+    <form action="{% url 'edit_date_of_birth' %}" method="post">
+        {{ form.as_p}}
+        {% csrf_token %}
+        <input type="submit" value="Edit Date of Birth">
+    </form>
+{% endblock %}

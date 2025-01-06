@@ -1,8 +1,10 @@
 from django import forms
+from django.forms import ModelForm
 from django.contrib.auth.models import User
+from . models import Profile
 from django.core.exceptions import ValidationError
 
-class RegistrationForm(forms.ModelForm):
+class RegistrationForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
@@ -37,7 +39,29 @@ class RegistrationForm(forms.ModelForm):
         user.save()
         return user
 
+class ProfileBioForm(ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["bio"]
+    
+class ProfilePhotoForm(ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["profile_photo"]
 
+class ProfileDateOfBirthForm(ModelForm):
+    class Meta:
+        model = Profile
+        fields = ["date_of_birth"]
 
+class UserFirstLastNameForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name"]
 
-
+class UsernameForm(ModelForm):
+    class Meta:
+        model = User
+        fields = ["username"]
+        exclude = ["email", "password", "first_name", "last_name"]
+    

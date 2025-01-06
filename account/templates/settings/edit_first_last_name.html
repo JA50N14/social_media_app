@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Edit First and Last Name{% endblock %}
+
+{% block content %}
+    <h1>Edit First and Last Name</h1>
+    <form action="{% url 'edit_first_last_name' %}" method="post">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <input type="submit" value="Edit Name">
+    </form>
+{% endblock %}

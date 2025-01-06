@@ -88,7 +88,7 @@ footer {
     display: flex;
     justify-content: center;     /*Centered horizontally in the container*/
     align-items: center;        /*Centered vertically in the container */
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .center-box .box-content {
@@ -97,12 +97,24 @@ footer {
     align-items: center;
     width: 80%;                /* Adjust the box width */
     max-width: 800px;           /* Limit the maximum width */
-    padding: 50px;
+    padding: 30px;
     background-color: #f9f9f9;
     border: 6px solid #000;     /* Black border */
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
+
+.box-content img {
+    width: 100%;
+    max-height: 800px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* .box-content a {
+    align-self: flex-start;
+} */
 
 #detail-post-like-section {
     display: flex;
@@ -138,103 +150,219 @@ footer {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
-
-
-/* Posts on Profiles & Feed Page */
-#post-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 10%;
-    padding: 0 15%;
-}
-
-.post-box {
-    flex: 1 1 calc(50% - 5%);
-    max-width: calc(50% - 5%);
-    box-sizing: border-box;
-    max-height: 40%;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px;
-    background-color: #f9f9f9;
-    border: 6px solid #000;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-}
-
-
-
-
-
-
-
-
-/* Feed page styling */
-.feed-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    padding: 20px;
-}
-
-@media (max-width: 1200px) {
-    .feed-container {
-        grid-template-columns: repeat(2, 1fr); /* 2 posts per row on medium screens */
-    }
-}
-
-@media (max-width: 768px) {
-    .feed-container {
-        grid-template-columns: 1fr; /* 1 post per row on small screens */
-    }
-}
-
-/* Each post box */
-.post-box {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 300px; /* Ensure uniform width for each box */
-    text-align: center;
-}
-
-/* Username above the image */
-.post-box .username {
-    text-align: left;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-/* Image inside the post box */
-.post-box img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-/* Link to detailed view */
-.post-box .details-link {
-    display: inline-block;
-    margin-bottom: 10px;
-    font-weight: bold;
-    color: #333;
+.custom-link {
+    color: black;
     text-decoration: none;
 }
 
-.post-box .details-link:hover {
-    color: #007BFF;
-    text-decoration: underline;
+/* Posts on Profiles & Feed Page */
+
+#post-container {
+    display: flex;    
+    flex-wrap: wrap;   /*Child elements to wrap onto multiple line, it not enough space*/
+    justify-content: flex-start;    /* Aligns items from left to right */
+    gap: 2%;   /*Adds gap between each flex item, both horizontally and vertically if they wrap to new line*/
+    padding: 0 15%;   /*Padding inside container, only on left & right side */
+    margin: 0 auto;     /*Vertical margins to 0, horizontally centers the container within its parent container*/
+    margin-left: 3%;
 }
 
-/* Post text below the detailed view link */
-.post-box .post-text {
+.post-box {
+    flex: 1 1 calc(33.33% - 30px);  /* 1 - allows item to grow and fill available space, 1 - allow item to shrink if not enough space in container, Set initial width to 33.33% of container */
+    max-width: calc(33.33% - 30px);  /* Limits max width of each .post-box to calc(33% - 20px), ensuring each item doesn't exceed the containers width minus 20px */
+    box-sizing: border-box;  /* Ensure padding and border included in the elements toal width and height */
+    flex-direction: column;   /* Aligns the item's child elements in a vertical column with the flexbox */
+    align-items: center;   /* Centers child elements of .post-box horizontally */
+    padding: 30px;   /* Adds space inside all sides of .post-box */
+    margin-bottom: 50px;  /* Adds space below each .post-box, creating vertical space between rows of items */
+    background-color: #f9f9f9;
+    border: 1px solid #000;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-wrap: break-word;  /* Prevents long words from overflowing by wrapping onto next line. */
+    height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+    display: flex;
+}
+
+.post-box img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/*For profile photo and needed for infinite scroll */
+.post-box-profile-photo {
+    flex: 1 1 calc(33.33% - 30px);  /* 1 - allows item to grow and fill available space, 1 - allow item to shrink if not enough space in container, Set initial width to 33.33% of container */
+    max-width: calc(33.33% - 30px);  /* Limits max width of each .post-box to calc(33% - 20px), ensuring each item doesn't exceed the containers width minus 20px */
+    box-sizing: border-box;  /* Ensure padding and border included in the elements toal width and height */
+    flex-direction: column;   /* Aligns the item's child elements in a vertical column with the flexbox */
+    align-items: center;   /* Centers child elements of .post-box horizontally */
+    padding: 30px;   /* Adds space inside all sides of .post-box */
+    margin-bottom: 50px;  /* Adds space below each .post-box, creating vertical space between rows of items */
+    background-color: #DAE3F3;
+    border: 1px solid #000;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-wrap: break-word;  /* Prevents long words from overflowing by wrapping onto next line. */
+    height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+    display: flex;
+}
+
+.post-box-profile-photo img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+
+#post-feed-container {
+    display: flex;    
+    flex-wrap: wrap;   /*Child elements to wrap onto multiple line, it not enough space*/
+    justify-content: flex-start;    /* Aligns items from left to right */
+    gap: 2%;   /*Adds gap between each flex item, both horizontally and vertically if they wrap to new line*/
+    padding: 0 15%;   /*Padding inside container, only on left & right side */
+    margin: 0 auto;     /*Vertical margins to 0, horizontally centers the container within its parent container*/
+    margin-left: 3%;
+}
+
+
+/* Header for My Profile */
+
+#profile-header-container {
+    display: flex;
+    justify-content: space-around;   /* Adjusts spacing for different number of items */
+    padding: 0px 15%;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    align-items: center;
+    height: 50px;
+}
+
+.profile-header-box {
+    flex: 1 1 auto;    /*Automatically adjusts to available space */
+    max-width: 18%;    /*Ensures boxes fit even if there are 6 items */
+    padding: 10px;
+    box-sizing: border-box;
+    justify-content: center;
+    display: flex;
+    overflow: hidden;
+}
+
+#follow-header-container {
+    display: flex;
+    justify-content: center; /* Centers the boxes */
+    gap: 20px; /* Adds a small distance between the boxes */
+    padding: 0 5%; /* Reduces padding to avoid large spaces on bigger screens */
+    margin: 0 auto;
+    margin-bottom: 0px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    align-items: center;
+    height: 50px;
+    max-width: 90%; /* Prevents the container from becoming too wide */
+}
+
+.follow-header-box {
+    flex: 0 1 auto; /* Prevents shrinking too small, allows adjusting to content */
+    width: 200px; /* Sets a fixed width for each box; adjust as needed */
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.custom-link.active {
+    text-decoration: underline;
+    text-decoration-color: black;
+    text-decoration-thickness: 2px;
+}
+
+
+/* Chat App */
+
+.chat-box {
+    height: 70vh;
+    flex: 1;    /*Takes available vertical space */
+    display: flex;
+    justify-content: center;     /*Centered horizontally in the container*/
+    align-items: flex-start;        /* Aligns messages to top of chat box */
+    margin-top: 10px;
+}
+
+.chat-box .chat-content {
+    display: flex;
+    flex-direction: column;     /* Items are laid out in a column (Each on top of each other)*/
+    width: 80%;                /* Adjust the box width */
+    max-width: 800px;           /* Limit the maximum width */
+    height: 90%;
+    max-height: 1000px;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border: 6px solid #000;     /* Black border */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.chat-message {
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin: 5px;
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+.message-sent {
+    align-self: flex-end;
+    background-color: rgb(135, 215, 250);
+    text-align: right;
+}
+
+.message-received {
+    align-self: flex-start;
+    background-color: lightgray;
     text-align: left;
-    font-size: 14px;
-    color: #555;
+}
+
+/* Message input area */
+.chat-input {
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    max-width: 800px;
+    display: flex;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.chat-input input {
+    flex: 1;                   /* Expand input to fill available space */
+    padding: 10px;
+    border: none;
+    outline: none;
+    border-radius: 10px 0 0 10px;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
 }

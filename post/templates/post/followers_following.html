@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Followers and Following{% endblock %}
+
+{% block content %}
+<div id="follow-header-container">
+    <div class="follow-header-box">
+        <h3><a class="custom-link {% if flag == 'followers' %}active{% endif %}" href="{% url 'post:followers_following_view' user.id 'followers' %}">Followers: {{ follower_count }}</a></h3>
+    </div>
+    <div class="follow-header-box">
+        <h3><a class="custom-link {% if flag == 'following' %}active{% endif %}" href="{% url 'post:followers_following_view' user.id 'following' %}">Following: {{ following_count }}</a></h3>
+    </div>
+</div>
+<div class="center-box">
+    <div class="box-content">
+        <h1>{{ user.username }}</h1>
+        <br>
+        <h4>Search</h4>
+        <br>
+        {% if flag == 'followers' %}
+            {% if not followers %}
+                <p>No followers yet.</p>
+            {% else %}
+                {% for follower in followers %}
+                    <p>
+                        {{ follower.user_from.username }} | <strong><a class="custom-link" href="{% url 'chat:chat_view' follower.user_from.id %}">Message</a></strong>
+                    </p>
+                    <br>
+                {% endfor %}
+            {% endif %}
+
+        {% else %}
+
+            {% if not following %}
+                <p>Not following anyone yet.</p>
+            {% else %}
+                {% for follower in following %}
+                <p>
+                    {{ follower.user_to.username }} | <strong><a class="custom-link" href="{% url 'chat:chat_view' follower.user_to.id %}">Message</a></strong>
+                </p>
+                <br>
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

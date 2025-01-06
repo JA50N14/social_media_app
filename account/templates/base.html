@@ -17,12 +17,12 @@
         <nav class="nav-links">
             <ul>
                 {% if request.user.is_authenticated %}
-                    <li><a href="#">Home</a></li>
+                    <li><a href="{% url 'post:feed' %}">Home</a></li>
                     <li><a href="#">Search</a></li>
                     <li><a href="#">Notifications</a></li>
-                    <li><a href="#">Messages</a></li>
-                    <li><a href="#">Profile</a></li>
-                    <li><a href="#">Settings</a></li>
+                    <li><a href="{% url 'post:messages_view' request.user.id %}">Messages</a></li>
+                    <li><a href="{% url 'post:my_profile' %}">Profile</a></li>
+                    <li><a href="{% url 'edit_profile' %}">Settings</a></li>
                     <li>
                         <form action="{% url 'logout' %}" method="post">
                             {% csrf_token %}
@@ -37,8 +37,17 @@
         </nav>
     </header>
 
-    {% block content %} {% endblock %}
-    {% block include_js %} {% endblock %}
+{% block content %} {% endblock %}
+
+{% block include_js %} 
+    <input type="hidden" name="csrfmiddlewaretoken" value="{% csrf_token %}">
+    <script>
+        document.addEventListener('htmx:configRequest', (event) => {
+        let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        event.detail.headers['X-CSRFToken'] = csrfToken;
+    });
+    </script>
+{% endblock %}
 
 </body>
 </html>
