@@ -96,6 +96,12 @@
             chatContent.scrollTop = chatContent.scrollHeight;
         }
     });
+
+    window.onbeforeunload = function() {
+        if (chatSocket) {
+            chatSocket.close();
+        }
+    }
 </script>
 
 {% endblock %}
