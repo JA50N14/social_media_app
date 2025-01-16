@@ -44,18 +44,3 @@ class ChatViewed(models.Model):
     
     def __str__(self):
         return f'Chat last seen: {self.last_viewed}'
-
-class ChatGroupCurrentUserCount(models.Model):
-    chat_group = models.CharField(max_length=150)
-    connected_user_count = models.PositiveIntegerField(default=1, null=False, blank=False)
-
-    class Meta:
-        ordering = ['-connected_user_count']
-
-    def save(self, *args, **kwargs):
-        if self.connected_user_count < 0:
-            self.connected_user_count = 0
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return f'Currently {self.connected_user_count} user(s) in chat group {self.chat_group}'

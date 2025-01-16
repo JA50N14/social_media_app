@@ -184,7 +184,7 @@ def messages_view(request, user_id):
     latest_message_time_sq = Message.objects.filter(chat=OuterRef('pk')).values_list('timestamp', flat=True)[:1]
     
     latest_message_seen_sq = Message.objects.filter(chat=OuterRef('pk')).exclude(sender=user).filter(timestamp__gt=ChatViewed.objects.filter(chat=OuterRef('chat'), user=user).values('last_viewed')[:1])
-    #The issue was the OuterRef('pk') referencing the 'pk' of the Message instance, not the 'pk' of the Chat instance. Once I changed the OuterRef to chat (i.e."chat=OuterRef('chat')"), it is now referencing the Chat instnace associated with the Message instnace. 
+    #The issue was the OuterRef('pk') referencing the 'pk' of the Message instance, not the 'pk' of the Chat instance. Once I changed the OuterRef to chat (i.e."chat=OuterRef('chat')"), it is now referencing the Chat instnace associated with the Message instance.
 
     chat_with_user1_id_sq = User.objects.filter(pk=OuterRef('user2')).values('id')[:1]
     chat_with_user2_id_sq = User.objects.filter(pk=OuterRef('user1')).values('id')[:1]
@@ -196,6 +196,10 @@ def messages_view(request, user_id):
     chat_with_user2_last_name_sq = User.objects.filter(pk=OuterRef('user1')).values('last_name')[:1]
 
     user_chats = Chat.objects.filter(Q(user1=user)|Q(user2=user), Exists(messages_exists_sq)).annotate(latest_message=Substr(Subquery(latest_message_sq), 1, 25), latest_message_time=Subquery(latest_message_time_sq), chat_with_id=Case(When(user1=user, then=Subquery(chat_with_user1_id_sq)), When(user2=user, then=Subquery(chat_with_user2_id_sq))), chat_with_first_name=Case(When(user1=user, then=Subquery(chat_with_user1_first_name_sq)), When(user2=user, then=Subquery(chat_with_user2_first_name_sq))), chat_with_last_name=Case(When(user1=user, then=Subquery(chat_with_user1_last_name_sq)), When(user2=user, then=Subquery(chat_with_user2_last_name_sq))), is_new=Exists(Subquery(latest_message_seen_sq))).order_by('-latest_message_time')
+
+    for message in user_chats:
+        print(message.is_new)
+        print(message.latest_message)
 
     return render(request, 'post/messages.html', {'user_chats': user_chats})
 

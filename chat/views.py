@@ -17,6 +17,8 @@ def chat_view(request, user_id):
 
     #Used to display whether a message has been seen by the receiver
     ChatViewed.objects.update_or_create(user=request.user, chat=chat)
+    chat_viewed_object = ChatViewed.objects.get(user=request.user, chat=chat)
+
 
     if request.user.id < chat_with.id:
         chat_group_id = f'{request.user.last_name}{chat_with.last_name}'

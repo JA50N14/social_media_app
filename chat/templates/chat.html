@@ -24,6 +24,7 @@
 
 {{ chat_group_id|json_script:"chat_group_id" }}
 {{ chat_with.id|json_script:"chat_with_id" }}
+{{ chat_with.username|json_script:"chat_with_username"}}
 {{ request.user.username|json_script:"request_username" }}
 
 <script>
@@ -82,9 +83,11 @@
         const messageInputDom = document.querySelector('#chat-message-input');
         const message = messageInputDom.value;
         const chatWithID = JSON.parse(document.getElementById('chat_with_id').textContent);
+        const chatWithUsername = JSON.parse(document.getElementById('chat_with_username').textContent);
         chatSocket.send(JSON.stringify({
             'message': message,
-            'chat_with_id': chatWithID
+            'chat_with_id': chatWithID,
+            'chat_with_username': chatWithUsername
         }));
         messageInputDom.value = '';
     };
