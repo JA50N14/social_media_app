@@ -1,7 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async, aclose_old_connections
-from . models import Chat, Message, ChatGroupCurrentUserCount, ChatViewed
+from . models import Chat, Message, ChatViewed
 from django.contrib.auth.models import User
 from django.db.models import F, Q
 from django.contrib.auth import get_user_model
