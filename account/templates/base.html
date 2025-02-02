@@ -19,7 +19,7 @@
                 {% if request.user.is_authenticated %}
                     <li><a href="{% url 'post:feed' %}">Home</a></li>
                     <li><a href="#">Search</a></li>
-                    <li><a href="#">Notifications</a></li>
+                    <li><a href="{% url 'post:notifications_view' request.user.id %}">Notifications</a></li>
                     <li><a href="{% url 'post:messages_view' request.user.id %}">Messages</a></li>
                     <li><a href="{% url 'post:my_profile' %}">Profile</a></li>
                     <li><a href="{% url 'edit_profile' %}">Settings</a></li>
@@ -47,6 +47,27 @@
         event.detail.headers['X-CSRFToken'] = csrfToken;
     });
     </script>
+
+    {% if request.user.is_authenticated %}
+        <script>
+            function checkForNewNotifications() {
+                fetch("{% url 'post:new_notification_check' request.user.id %}")
+                .then(response => response.json())
+                .then(data => {
+                    let notificationButton = document.querySelector(".nav-links a[href*='notifications']");
+                    if (data.new_tag) {
+                        notificationButton.style.backgroundColor = "darkblue";
+                    } else {
+                        notificationButton.style.backgroundColor = "";
+                    }
+                })
+                .catch(error => console.error("Error checking notifications:", error));
+            }
+            
+            setInterval(checkForNewNotifications, 90000);
+            document.addEventListener("DOMContentLoaded", checkForNewNotifications);
+        </script>
+    {% endif %}
 {% endblock %}
 
 </body>

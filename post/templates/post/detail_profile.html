@@ -49,7 +49,7 @@
                         <div id="detail-post-like-section">
                             <div class="post-like-{{ post.id }}">{% include 'partials/post_like.html' with post_like_status=post.post_like_status %}</div>
                         </div>
-                        <p><strong>{{ user.username }}</strong> {{ post.caption }}</p>
+                        <p><strong>{{ user.username }}</strong> {{ post.processed_caption|safe }}</p>
                 </div>
             {% endfor %}
         {% endif %}

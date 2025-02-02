@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.models import User
 from .models import Profile
+from post.models import TagNotification
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.forms import UserCreationForm
 from .forms import RegistrationForm, ProfileBioForm, ProfilePhotoForm, UserFirstLastNameForm, ProfileDateOfBirthForm, UsernameForm
@@ -13,6 +14,8 @@ def register(request):
         form = RegistrationForm(data=request.POST)
         if form.is_valid():
             form.save()
+            user = User.objects.get(username=form.cleaned_data['username'])
+            TagNotification.objects.create(user=user)
             return redirect('login')
         else:
             return render(request, 'registration/register.html', {'form': form})

@@ -43,7 +43,7 @@
                         <img src="{{ post.photo.url }}">
                     </a>
                         <p><strong>Likes: {{ post.count_likes }}</strong></p>
-                    <p><strong>{{ request.user.username }}</strong> {{ post.caption }}</p>
+                    <p><strong>{{ request.user.username }}</strong> {{ post.processed_caption|safe }}</p>
                 </div>
             {% endfor %}
         {% endif %}

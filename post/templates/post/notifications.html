@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+    <div id="follow-header-container">
+        <div class="follow-header-box">
+            <h3>Notifications</h3>
+        </div>
+    </div>
+    <div class="center-box">
+        <div class="box-content">
+            <h1>{{ request.user.username }}</h1>
+            <br>
+            <h4>Search</h4>
+            <br>
+            {% if not page_obj %}
+                <p>You have not been tagged in a post yet</p>
+            {% else %}
+                {% for tag in page_obj %}
+                    <p>
+                        <a class="custom-link" style="{% if not tag.seen %} font-weight: bold;{% endif %}" href="{% url 'post:post_detail' tag.post.id tag.id %}">{{ tag.tagged_by }} tagged you in a post</a>
+                    </p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

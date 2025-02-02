@@ -18,7 +18,7 @@
                             {% include 'partials/post_like.html' with post_like_status=post.post_like_status %}
                         </div>
                     </div>
-                    <p><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+                    <p><strong>{{ post.user.username }}</strong> {{ post.processed_caption|safe }}</p>
                 </div>
             {% endfor %}
         {% else %}

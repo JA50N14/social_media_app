@@ -95,9 +95,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
         ChatViewed.objects.filter(user=chat_with_user, chat=chat).update(last_viewed=timezone.now())
         chat_viewed_object = ChatViewed.objects.get(user=chat_with_user, chat=chat)
 
-#You need to track users in each channel group - Try using redis directly
-    #Check if a dictionary with the self.chat_group_name exists
-        #If yes, see if self.scope["user"].username is in it
-            #if yes, do nothing. Will leverage this to update ChatViewed
-            #if no, add str(self.scope["user"].username) to the self.chat_group_name key
-        #If no, add the self.chat_group_name as a key to the dict AND add the users username as a value

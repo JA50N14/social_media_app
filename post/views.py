@@ -1,17 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from . models import Post, Like, Comment, Follow
+from . models import Post, Like, Comment, Follow, TagNotification, UserTagged
 from chat.models import Chat, Message, ChatViewed
 from account.models import Profile
 from . forms import PostCreateForm, CommentCreateForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
-from django.template.loader import render_to_string
 from django.core.paginator import Paginator
 from django.db.models import Exists, OuterRef, Q, F, Subquery, Case, When
 from django.db.models.functions import Substr
+from django.utils import timezone
+import re
 
 # Create your views here.
+
+#Work on the notifications.html - You need to bold links that have not been clicked and unbold links that have been clicked.
 
 def post_create(request):
     if request.method == 'POST':
@@ -20,13 +23,14 @@ def post_create(request):
             post = form.save(commit=False)
             post.user = request.user
             post.save()
+            update_tag_notification_model(post, request.user)
             return redirect('post:my_profile')
     else:
         form = PostCreateForm()
     return render(request, 'post/post_create.html', {'form': form})
 
 
-def post_detail(request, post_id):
+def post_detail(request, post_id, user_tagged_id=None):
     post = get_object_or_404(Post, pk=post_id)
     user = post.user
     user_like_post = post.likes.filter(user=request.user).first()
@@ -37,6 +41,9 @@ def post_detail(request, post_id):
     comments = post.comments.filter(parent_comment=None).order_by('-created')[:10]
     for comment in comments:
         comment.user_liked = comment.likes.filter(user=request.user, like=True).exists()
+    if user_tagged_id:
+        UserTagged.objects.filter(id=user_tagged_id).update(seen=True) 
+
     return render(request, 'post/post_detail.html', {'post': post, 'user': user, 'comments': comments, 'post_like_status': post_like_status})
 
 
@@ -49,6 +56,7 @@ def post_comment_add(request, post_id):
             comment.user = request.user
             comment.post = post
             comment.save()
+            update_tag_notification_model(post, request.user, comment)
             return render(request, 'partials/comment.html', {'comment': comment})
     else:
         form = CommentCreateForm()
@@ -95,6 +103,7 @@ def comment_reply(request, post_id, comment_id):
             parent_comment = get_object_or_404(Comment, id=comment_id)
             comment_reply.user, comment_reply.post, comment_reply.parent_comment = request.user, post, parent_comment
             comment_reply.save()
+            update_tag_notification_model(post, request.user, comment_reply)
             all_comment_replies = parent_comment.get_all_replies()
             return render(request, 'partials/comment_replies.html', {'post': post, 'all_comment_replies': all_comment_replies})
     else:
@@ -130,8 +139,8 @@ def my_profile_view(request):
 def detail_profile_view(request, user_id):
     User = get_user_model()
     user = get_object_or_404(User, id=user_id)
-    user_likes = Like.objects.filter(post=OuterRef('pk'), user=request.user, like=True)
-    all_posts = Post.objects.filter(user=user).order_by("-created").annotate(post_like_status=Exists(user_likes))
+    user_likes_sq = Like.objects.filter(post=OuterRef('pk'), user=request.user, like=True)
+    all_posts = Post.objects.filter(user=user).order_by("-created").annotate(post_like_status=Exists(user_likes_sq))
     paginator = Paginator(all_posts, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -197,10 +206,6 @@ def messages_view(request, user_id):
 
     user_chats = Chat.objects.filter(Q(user1=user)|Q(user2=user), Exists(messages_exists_sq)).annotate(latest_message=Substr(Subquery(latest_message_sq), 1, 25), latest_message_time=Subquery(latest_message_time_sq), chat_with_id=Case(When(user1=user, then=Subquery(chat_with_user1_id_sq)), When(user2=user, then=Subquery(chat_with_user2_id_sq))), chat_with_first_name=Case(When(user1=user, then=Subquery(chat_with_user1_first_name_sq)), When(user2=user, then=Subquery(chat_with_user2_first_name_sq))), chat_with_last_name=Case(When(user1=user, then=Subquery(chat_with_user1_last_name_sq)), When(user2=user, then=Subquery(chat_with_user2_last_name_sq))), is_new=Exists(Subquery(latest_message_seen_sq))).order_by('-latest_message_time')
 
-    for message in user_chats:
-        print(message.is_new)
-        print(message.latest_message)
-
     return render(request, 'post/messages.html', {'user_chats': user_chats})
 
 
@@ -212,11 +217,67 @@ def feed(request):
         posts = Post.objects.all().exclude(user=user).order_by("-created")
 
     posts.annotate(post_like_status=Exists(Like.objects.filter(post=OuterRef('pk'), user=user, like=True)))
+
     paginator = Paginator(posts, 6)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     return render(request, 'post/feed.html', {'page_obj': page_obj})
 
+
+def notifications_view(request, user_id):
+    user = User.objects.get(id=user_id)
+    TagNotification.objects.update_or_create(user=user, defaults={'notification_last_clicked': timezone.now})
+    tags = UserTagged.objects.filter(user_tagged=user)
+    for tag in tags:
+        print(tag.seen)
+    paginator = Paginator(tags, 12)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'post/notifications.html', {'page_obj': page_obj})
+
+
+def update_tag_notification_model(post, post_user, comment=None):
+    pattern = r"@([\w.]+)"
+    if comment == None:
+        username_lst = re.findall(pattern, post.caption)
+    else:
+        username_lst = re.findall(pattern, comment.comment_text)
+    tagged_users = User.objects.filter(username__in=username_lst)
+    for tagged_user in tagged_users:
+        TagNotification.objects.update_or_create(user=tagged_user, defaults={'last_tagged_at': timezone.now})
+        
+        create_user_tagged_instance(tagged_user, post, post_user)
+
+
+def create_user_tagged_instance(tagged_user, post, post_user):
+    UserTagged.objects.create(user_tagged=tagged_user, tagged_by=post_user, post=post)
+
+
+def check_for_new_notifications(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    tag_notification = TagNotification.objects.get(user=user)
+    if tag_notification.last_tagged_at > tag_notification.notification_last_clicked:
+        data = {'new_tag': True}
+        print(f'{user.username} - New Post')
+    else:
+        data = {'new_tag': False}
+        print(f'{user.username} - No New Post')
+    return JsonResponse(data)
+
+
+def autocomplete_user_tags(request):
+    user_string = request.GET.get('q')
+    if user_string.startswith('@'):
+        user_string = user_string[1:]
+
+    if user_string:
+        user_list = User.objects.filter(username__startswith=user_string)[:10].values_list('username', flat=True)
+        return JsonResponse({"usernames": user_list})
+    
+    return JsonResponse({"usernames": []})
+
+
+#Create auto-complete feature. 
 
 
 

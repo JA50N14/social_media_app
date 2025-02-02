@@ -1,5 +1,9 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.utils import timezone
+import re
+from django.urls import reverse
 
 # Create your models here.
 
@@ -11,9 +15,22 @@ class Post(models.Model):
 
     def __str__(self):
         return f'Post: {self.user.username} - {self.created}'
-
+    
     def count_likes(self):
         return self.likes.filter(like=True).count()
+    
+    @property
+    def processed_caption(self):
+        def replace_tag(match):
+            username = match.group(1)
+            try:
+                user = User.objects.get(username=username)
+                return f'<a class="user-link" href="{reverse("post:detail_profile_view", kwargs={"user_id": user.id})}">@{username}</a>'
+            except User.DoesNotExist:
+                return f'<a class="user-link" href="#">@{username}</a>'
+            
+        pattern = r"@([\w.]+)"
+        return re.sub(pattern, replace_tag, self.caption)
 
 
 class Comment(models.Model):
@@ -31,6 +48,19 @@ class Comment(models.Model):
 
     def get_all_replies(self):
         return self.replies.all().order_by('-created')[:15]
+    
+    @property
+    def processed_caption(self):
+        def replace_tag(match):
+            username = match.group(1)
+            try:
+                user = User.objects.get(username=username)
+                return f'<a class="user-link" href={reverse('post:detail_profile_view', kwargs={"user_id": user.id})}>@{username}</a>'
+            except User.DoesNotExist:
+                return f'<a class="user-link" href="#">@{username}</a>' 
+            
+        pattern = r"@([\w.]+)"
+        return re.sub(pattern, replace_tag, self.comment_text)
 
 
 class Like(models.Model):
@@ -48,3 +78,27 @@ class Follow(models.Model):
     user_from = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follower', on_delete=models.CASCADE)
     user_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='following', on_delete=models.CASCADE)
     following = models.BooleanField(default=True)
+
+
+class TagNotification(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, related_name='tag_notification', on_delete=models.CASCADE)
+    last_tagged_at= models.DateTimeField(default=timezone.now)
+    notification_last_clicked = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f'{self.user.username} - last time tagged: {self.last_tagged_at} - last time tags viewed: {self.notification_last_clicked}'
+
+
+class UserTagged(models.Model):
+    user_tagged = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tagged_user', on_delete=models.CASCADE)
+    tagged_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tagged_by', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='tagged_users', on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    seen = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f'{self.tagged_by.username} tagged {self.user_tagged.username} on post id: {self.post.id}'
+    

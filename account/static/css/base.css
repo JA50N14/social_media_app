@@ -366,3 +366,13 @@ footer {
     color: #fff;
     border: none;
 }
+
+/*styling for users tagged in posts and comments*/
+.user-link {
+    color: blue;
+    text-decoration: none;
+}
+
+.user-link:hover {
+    color: darkblue;
+}

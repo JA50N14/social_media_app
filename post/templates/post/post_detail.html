@@ -18,7 +18,7 @@
             <div id="detail-post-like-section">
                 <p id="post-like-{{ post.id }}">{% include 'partials/post_like.html' with post_like_status=post_like_status %}</p>
             </div>
-            <p>{{ post.caption }}</p>
+            <p>{{ post.processed_caption|safe }}</p>
             <br>
             <button id="show-comment-form" hx-get="{% url 'post:post_comment_add' post.id %}" hx-target="#comment-form-container" hx-swap="innerHTML">
                 Add a Comment
@@ -33,7 +33,7 @@
                             <p>
                                 <strong>{{ comment.user.username }} </strong>| {{ comment.created }} |<span id="comment-like-container-{{ comment.id }}">{% include 'partials/comment_like.html' with comment=comment post=post %}</span>
                             </p>
-                            <p>{{ comment.comment_text }}</p>
+                            <p>{{ comment.processed_caption|safe }}</p>
                             <button hx-get="{% url 'post:comment_reply' post.id comment.id %}" hx-target="#comment-reply-form-{{ comment.id }}" hx-swap="innerHTML">Reply</button>
                             <div id="comment-reply-form-{{ comment.id }}"></div>
                             <br>
