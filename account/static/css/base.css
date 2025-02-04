@@ -376,3 +376,25 @@ footer {
 .user-link:hover {
     color: darkblue;
 }
+
+
+/*Auto-complete*/
+.autocomplete-dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid black;
+    list-style: none;
+    padding: 5px;
+    margin: 0;
+    width: 312px;
+}
+
+.autocomplete-dropdown li {
+    padding: 5px;
+    cursor: pointer;
+}
+
+.autocomplete-dropdown li:hover {
+    background-color: #f0f0f0;
+}
+

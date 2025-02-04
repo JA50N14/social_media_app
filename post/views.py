@@ -266,18 +266,16 @@ def check_for_new_notifications(request, user_id):
 
 
 def autocomplete_user_tags(request):
-    user_string = request.GET.get('q')
-    if user_string.startswith('@'):
-        user_string = user_string[1:]
+    user_string = str(request.GET.get('q'))
 
     if user_string:
-        user_list = User.objects.filter(username__startswith=user_string)[:10].values_list('username', flat=True)
+        user_list = list(User.objects.filter(username__startswith=user_string)[:10].values_list('username', flat=True))
         return JsonResponse({"usernames": user_list})
-    
+
     return JsonResponse({"usernames": []})
 
 
-#Create auto-complete feature. 
+#Create auto-complete feature when tagging a user in a post, comment, or comment-reply.
 
 
 
