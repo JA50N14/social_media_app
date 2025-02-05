@@ -258,14 +258,13 @@ def check_for_new_notifications(request, user_id):
     tag_notification = TagNotification.objects.get(user=user)
     if tag_notification.last_tagged_at > tag_notification.notification_last_clicked:
         data = {'new_tag': True}
-        print(f'{user.username} - New Post')
     else:
         data = {'new_tag': False}
-        print(f'{user.username} - No New Post')
     return JsonResponse(data)
 
 
 def autocomplete_user_tags(request):
+    print('AAAAAAA')
     user_string = str(request.GET.get('q'))
 
     if user_string:

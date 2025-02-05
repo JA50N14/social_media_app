@@ -394,7 +394,9 @@ footer {
     cursor: pointer;
 }
 
-.autocomplete-dropdown li:hover {
+.autocomplete-dropdown li:hover,
+.autocomplete-dropdown li.selected {
     background-color: #f0f0f0;
+    font-weight: bold;
 }
 

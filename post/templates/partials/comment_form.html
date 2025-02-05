@@ -1,5 +1,5 @@
 
-<form hx-post="{% url 'post:post_comment_add' post_id %}" hx-target="#comments-section" hx-swap="afterbegin" hx-on:htmx:after-request="this.reset(); this.remove()">
+<form hx-post="{% url 'post:post_comment_add' post_id %}" hx-target="#comments-section" hx-swap="afterbegin" hx-on:htmx:after-request="window.location.reload();">
     {{ form.as_p }}
     {% csrf_token %}
     <input type="submit" value="Submit">

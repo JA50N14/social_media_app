@@ -70,4 +70,128 @@
         event.detail.headers['X-CSRFToken'] = csrfToken;
     });
     </script>
+
+    <script>
+        document.addEventListener("htmx:afterSwap", function () {
+            const captionInput = document.getElementById("id_comment_text");
+            let dropdown = null;
+
+            let debounceTimer;
+            let selectedIndex = -1 //Tracks highlighted username
+
+            // <!--Debounce function to limit API requests-->
+            function debounce(func, delay) {
+                return function (...args) {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => func(...args), delay);
+                };
+            }
+
+            async function fetchUsernames(q) {
+                try {
+                    const response = await fetch(`/post/autocomplete-user-tags?q=${q}`);
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch usernames");
+                    }
+                    const data = await response.json();
+                    return data.usernames;
+                } catch (error) {
+                    console.error("Error fetching usernames:", error);
+                    return [];
+                }
+            }
+
+            function createDropdown(usernames, position) {
+                if (dropdown) dropdown.remove();
+
+                dropdown = document.createElement("ul");
+                dropdown.className = "autocomplete-dropdown";
+                dropdown.style.top = `${position.top + window.scrollY}px`;
+                dropdown.style.left = `${position.left + window.scrollX}px`;
+
+                usernames.forEach((username, index) => {
+                    let item = document.createElement("li");
+                    item.textContent = `@${username}`;
+                    item.dataset.index = index;
+                    item.addEventListener("click", () => insertUsername(username));
+                    dropdown.appendChild(item);
+                });
+
+                document.body.appendChild(dropdown);
+                selectedIndex = -1; //Reset selection index
+            }
+
+            function insertUsername(username) {
+                const cursorPos = captionInput.selectionStart;
+                const textBefore = captionInput.value.slice(0, cursorPos);
+                const textAfter = captionInput.value.slice(cursorPos);
+
+                // Find the last @mention before the cursor position
+                const mentionStart = textBefore.lastIndexOf("@");
+
+                if (mentionStart !== -1) {
+                    //Remove the partial username and replace it with the selected one
+                    const updatedText = captionInput.value.slice(0, mentionStart) + `@${username} ` + textAfter;
+                    captionInput.value = updatedText;
+                    captionInput.selectionStart = captionInput.selectionEnd = mentionStart + username.length + 2;
+                } else {
+                    //If no "@" found (failsafe)
+                    const updatedText = `${textBefore}@${username} ${textAfter}`;
+                    captionInput.value = updatedText;
+                }
+
+                captionInput.focus();
+                dropdown.remove();
+            }
+
+            async function handleInput(event) {
+                const cursorPos = captionInput.selectStart;
+                const text = captionInput.value.slice(0, cursorPos);
+                const match = text.match(/@([\w]*)$/);
+
+                if (match) {
+                    const q = match[1];
+                    if (q.length < 2) return;
+                
+                    const usernames = await fetchUsernames(q);
+                    if (usernames.length > 0) {
+                        const rect = captionInput.getBoundingClientRect();
+                        createDropdown(usernames, {top: rect.bottom, left: rect.left});
+                    } else if (dropdown) {
+                        dropdown.remove();
+                    }
+                } else if (dropdown) {
+                    dropdown.remove();
+                }
+            }
+
+        function handleKeyDown(event) {
+            if (!dropdown) return;
+
+            const items = dropdown.querySelectorAll("li");
+            if (items.length === 0) return;
+
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                selectedIndex = (selectedIndex + 1) % items.length;
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+            } else if (event.key === "Enter") {
+                event.preventDefault();
+                if (selectedIndex >= 0) {
+                    insertUsername(items[selectedIndex].textContent.slice(1))
+                }
+            }
+            items.forEach((item, index) => {
+                item.classList.toggle("selected", index === selectedIndex);
+            });
+        }
+        
+        captionInput.addEventListener("input", debounce(handleInput, 300));
+        captionInput.addEventListener("keydown", handleKeyDown);
+        });
+
+    </script>
+
 {% endblock %}
