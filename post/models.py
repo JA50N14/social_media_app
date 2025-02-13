@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 import re
 from django.urls import reverse
+from django.db.models import UniqueConstraint
 
 # Create your models here.
 
@@ -101,4 +102,18 @@ class UserTagged(models.Model):
 
     def __str__(self):
         return f'{self.tagged_by.username} tagged {self.user_tagged.username} on post id: {self.post.id}'
+
+class RecentlySearched(models.Model):
+    searching_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='searching_user', on_delete=models.CASCADE)
+    searched_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='searched_user', on_delete=models.CASCADE)
+    last_viewed = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.searching_user.username} searched for {self.searched_user.username} on {self.last_viewed}'
+    
+    class Meta:
+        ordering = ['-last_viewed']
+        constraints = [
+            UniqueConstraint(fields=['searching_user', 'searched_user'], name='unique_search')
+        ]
     

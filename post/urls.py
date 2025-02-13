@@ -21,4 +21,7 @@ urlpatterns = [
     path('comment-reply/<int:post_id>/<int:comment_id>/', views.comment_reply, name='comment_reply'),
     path('comment-replies-view/<int:post_id>/<int:comment_id>/', views.comment_replies_view, name='comment_replies_view'),
     path('notifications/<int:user_id>/', views.notifications_view, name='notifications_view'),
+    path('notification-search/', views.notification_search, name='notification_search'),
+    path('search/', views.user_search_view, name='user_search_view'),
+    path('message-search/', views.message_search, name='message_search'),
 ]

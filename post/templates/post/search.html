@@ -1,13 +1,14 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Notifications{% endblock %}
+{% block title %}Search{% endblock %}
 
 {% block content %}
     <div id="follow-header-container">
         <div class="follow-header-box">
-            <h3>Notifications</h3>
+            <h3>Search</h3>
         </div>
     </div>
+
     <div class="center-box">
         <div class="box-content">
             <h1>{{ request.user.username }}</h1>
@@ -15,31 +16,23 @@
             <label for="id_caption">Search</label>
             <input type="text" id="id_caption" name="search_text">
             <br>
-            <ul id="tag-list">
-                {% if not page_obj %}
-                    <p>You have not been tagged in a post yet</p>
+            <ul id="user-list">
+                {% if not user_list %}
+                    <p>No recent searches</p>
                 {% else %}
-                    {% for tag in page_obj %}
+                    <p><strong>Recently searched</strong></p>
+                    {% for user in user_list %}
                         <p>
-                            <a class="custom-link" style="{% if not tag.seen %} font-weight: bold;{% endif %}" href="{% url 'post:post_detail' tag.post.id tag.id %}">{{ tag.tagged_by }} tagged you in a post</a>
+                            <a class="custom-link" href="{% url 'post:detail_profile_view' user.id %}">{{ user.searched_user.username }} - {{ user.searched_user.first_name }} {{ user.searched_user.last_name }}</a>
                         </p>
                     {% endfor %}
                 {% endif %}
             </ul>
         </div>
     </div>
-
 {% endblock %}
 
 {% block include_js %}
-    <script>
-        window.addEventListener("pageshow", function (event) {
-            if (event.persisted) {
-                location.reload()
-            }
-        })
-    </script>    
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const captionInput = document.getElementById("id_caption");
@@ -54,16 +47,16 @@
                 };
             }
 
-            async function fetchTags(q) {
+            async function fetchUsers(q) {
                 try {
-                    const response = await fetch(`/post/notification-search?q=${q}`);
+                    const response = await fetch(`/post/search?q=${q}`);
                     if (!response.ok) {
-                        throw new Error("Failed to fetch tag list");
+                        throw new Error("Failed to fetch user list");
                     }
                     const data = await response.json();
                     return data;
                 } catch (error) {
-                    console.error("Error fetching tag list:", error);
+                    console.error("Error fetching user list:", error);
                     return [];
                 }
             }
@@ -71,43 +64,40 @@
             async function handleInput(event) {
                 const cursorPos = captionInput.selectStart;
                 const text = captionInput.value.slice(0, cursorPos);
-                const tagList = document.getElementById('tag-list');
+                const userList = document.getElementById('user-list');
                 if (text.trim() === "") {
-                    tagList.innerHTML = "";
-                    location.reload();
+                    userList.innerHTML = "";
+                    location.reload()
                     return;
                 }
 
                 if (text.length < 2) return;
                 
-                const data = await fetchTags(text);
-                tagList.innerHTML = "";
+                const data = await fetchUsers(text);
+                userList.innerHTML = "";
 
                 if (data.length > 0) {
-                    tagList.innerHTML = "";
-                    data.forEach(tag => {
+                    userList.innerHTML = "";
+                    data.forEach(user => {
                         const listItem = document.createElement("p");
                         const link = document.createElement("a");
-                        link.href = `/post/post-detail/${tag.post}/${tag.user_tagged}`;
+                        link.href = `/post/profile/${user.id}/`;
                         link.className = 'custom-link';
-                        link.textContent = `${tag.tagged_by__username} tagged you in a post`;
-                        if (!tag.seen) {
-                            link.style.fontWeight = "bold";
-                        }
+                        link.textContent = `${user.username} - ${user.first_name} ${user.last_name}`;
                         listItem.appendChild(link);
-                        tagList.appendChild(listItem);
+                        userList.appendChild(listItem);
                     });
                 } else {
                     const noResults = document.createElement("p");
                     noResults.textContent = "No results";
                     noResults.style.color = "gray";
-                    tagList.appendChild(noResults);
+                    userList.appendChild(noResults);
                 }
                 }
 
             captionInput.addEventListener("input", debounce(handleInput, 300));
         });
 
-</script>
+    </script>
 
 {% endblock %}

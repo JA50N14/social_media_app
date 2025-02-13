@@ -12,23 +12,104 @@
         <div class="box-content">
             <h1>{{ request.user.username }}</h1>
             <br>
-            <h4>Search</h4>
+            <label for="id_caption">Search</label>
+            <input type="text" id="id_caption" name="search_text">
             <br>
             {% if not user_chats %}
                 <p>No messages yet.</p>
             {% else %}
-                {% for message in user_chats %}
-                    <a class="custom-link" href="{% url 'chat:chat_view' message.chat_with_id %}">
-                        <p>
-                            {{ message.chat_with_first_name }} {{ message.chat_with_last_name }}
-                            <br>
-                            <span style="color: gray; {% if message.is_new %}font-weight: bold;{% endif %}">{{ message.latest_message }}</span>
-                        </p>
-                    </a>
-                    <br>
-                {% endfor %}
+                <ul id="message-list">
+                    {% for message in user_chats %}
+                        <a class="custom-link" href="{% url 'chat:chat_view' message.chat_with_id %}">
+                            <p>
+                                {{ message.chat_with_first_name }} {{ message.chat_with_last_name }}
+                                <br>
+                                <span style="color: gray; {% if message.is_new %}font-weight: bold;{% endif %}">{{ message.latest_message }}</span>
+                            </p>
+                        </a>
+                        <br>
+                    {% endfor %}
+                </ul>
             {% endif %}
         </div>
     </div>
+
+{% endblock %}
+
+{% block include_js %}
+<script>
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            location.reload()
+        }
+    })
+</script>    
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const captionInput = document.getElementById("id_caption");
+        captionInput.focus()
+        let debounceTimer;
+
+        // <!--Debounce function to limit API requests-->
+        function debounce(func, delay) {
+            return function (...args) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => func(...args), delay);
+            };
+        }
+
+        async function fetchTags(q) {
+            try {
+                const response = await fetch(`/post/message-search?q=${q}`);
+                if (!response.ok) {
+                    throw new Error("Failed the user list list");
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error("Error fetching user list:", error);
+                return [];
+            }
+        }
+
+        async function handleInput(event) {
+            const cursorPos = captionInput.selectStart;
+            const text = captionInput.value.slice(0, cursorPos);
+            const messageList = document.getElementById('message-list');
+            if (text.trim() === "") {
+                messageList.innerHTML = "";
+                location.reload();
+                return;
+            }
+
+            if (text.length < 2) return;
+            
+            const data = await fetchTags(text);
+            messageList.innerHTML = "";
+
+            if (data.length > 0) {
+                messageList.innerHTML = "";
+                data.forEach(user => {
+                    const listItem = document.createElement("p");
+                    const link = document.createElement("a");
+                    link.href = `/chat/${user.id}`;
+                    link.className = 'custom-link';
+                    link.textContent = `${user.username} - ${user.first_name} ${user.last_name}`;
+                    listItem.appendChild(link);
+                    messageList.appendChild(listItem);
+                });
+            } else {
+                const noResults = document.createElement("p");
+                noResults.textContent = "No results";
+                noResults.style.color = "gray";
+                messageList.appendChild(noResults);
+            }
+            }
+
+        captionInput.addEventListener("input", debounce(handleInput, 300));
+    });
+
+</script>
 
 {% endblock %}

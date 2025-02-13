@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from . models import Post, Like, Comment, Follow, TagNotification, UserTagged
+from . models import Post, Like, Comment, Follow, TagNotification, UserTagged, RecentlySearched
 from chat.models import Chat, Message, ChatViewed
 from account.models import Profile
 from . forms import PostCreateForm, CommentCreateForm
@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponse
 from django.core.paginator import Paginator
-from django.db.models import Exists, OuterRef, Q, F, Subquery, Case, When
+from django.db.models import Exists, OuterRef, Q, F, Subquery, Case, When, Value
 from django.db.models.functions import Substr
 from django.utils import timezone
 import re
@@ -152,7 +152,11 @@ def detail_profile_view(request, user_id):
     follower_count = Follow.objects.filter(user_to=user, following=True).count()
     following_count = Follow.objects.filter(user_from=user, following=True).count()
     following_user = Follow.objects.filter(user_from=request.user, user_to=user).first()
+    add_to_recently_searched(request.user, user)
     return render(request, 'post/detail_profile.html', {'user': user, 'page_obj': page_obj, 'profile': profile, 'post_count': post_count, 'follower_count': follower_count, 'following_count': following_count, 'following_user': following_user})
+
+def add_to_recently_searched(searching_user, searched_user):
+    RecentlySearched.objects.update_or_create(searching_user=searching_user, searched_user=searched_user, defaults={'last_viewed': timezone.now})
 
 
 def follow_unfollow_user(request, user_id, other_user_id):
@@ -209,6 +213,26 @@ def messages_view(request, user_id):
     return render(request, 'post/messages.html', {'user_chats': user_chats})
 
 
+def message_search(request):
+    search_string = request.GET.get('q')
+    user_list = list(Chat.objects.filter(Q(user1=request.user) | Q(user2=request.user)).annotate(other_user=Case(When(Q(user1=request.user) & (Q(user2__username__istartswith=search_string) | Q(user2__first_name__istartswith=search_string) | Q(user2__last_name__istartswith=search_string)), then=F('user2')), When(Q(user2=request.user) & (Q(user1__username__istartswith=search_string) | Q(user1__first_name__istartswith=search_string) | Q(user1__last_name__istartswith=search_string)), then=F('user1')), default=Value(None))).values_list('other_user', flat=True))
+
+    if len(user_list) < 15:
+        additional_list = list(Follow.objects.filter(Q(user_from=request.user) & (Q(user_to__username__istartswith=search_string) | Q(user_to__first_name__istartswith=search_string) | Q(user_to__last_name__istartswith=search_string))).exclude(user_to__id__in=user_list).values_list('user_to__id', flat=True))
+        user_list.extend(additional_list)
+
+    if len(user_list) < 15:
+        additional_list = list(RecentlySearched.objects.filter(Q(searching_user=request.user) & (Q(searched_user__username__istartswith=search_string) | Q(searched_user__first_name__istartswith=search_string) | Q(searched_user__last_name__istartswith=search_string))).exclude(searched_user__id__in=user_list).values_list('searched_user__id', flat=True))
+        user_list.extend(additional_list)
+    
+    if len(user_list) < 15:
+        additional_list = list(User.objects.filter((Q(username__istartswith=search_string) | Q(first_name__istartswith=search_string) | Q(last_name__istartswith=search_string))).exclude(id=request.user.id, id__in=user_list).values_list('id', flat=True))
+        user_list.extend(additional_list)
+    
+    user_query = list(User.objects.filter(id__in=user_list).values('username', 'first_name', 'last_name', 'id'))
+    return JsonResponse(user_query, safe=False)
+
+
 def feed(request):
     user=request.user
     following_users = Follow.objects.filter(user_from=user, following=True).values_list('user_to', flat=True)
@@ -227,13 +251,18 @@ def feed(request):
 def notifications_view(request, user_id):
     user = User.objects.get(id=user_id)
     TagNotification.objects.update_or_create(user=user, defaults={'notification_last_clicked': timezone.now})
-    tags = UserTagged.objects.filter(user_tagged=user)
-    for tag in tags:
-        print(tag.seen)
+    tags = UserTagged.objects.filter(user_tagged=user).order_by('seen', '-created')
     paginator = Paginator(tags, 12)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     return render(request, 'post/notifications.html', {'page_obj': page_obj})
+
+
+def notification_search(request):
+    search_string = request.GET.get('q')
+    if search_string:
+        tag_list = list(UserTagged.objects.filter(Q(user_tagged=request.user), (Q(tagged_by__username__istartswith=search_string) | Q(tagged_by__first_name__istartswith=search_string) | Q(tagged_by__last_name__istartswith=search_string))).order_by('tagged_by', 'seen', '-created').values('tagged_by__username', 'tagged_by__first_name', 'tagged_by__last_name', 'post', 'seen', 'user_tagged'))
+        return JsonResponse(tag_list, safe=False)
 
 
 def update_tag_notification_model(post, post_user, comment=None):
@@ -264,17 +293,41 @@ def check_for_new_notifications(request, user_id):
 
 
 def autocomplete_user_tags(request):
-    print('AAAAAAA')
-    user_string = str(request.GET.get('q'))
+    user_string = request.GET.get('q')
 
     if user_string:
-        user_list = list(User.objects.filter(username__startswith=user_string)[:10].values_list('username', flat=True))
+        user_list = list(User.objects.filter(username__istartswith=user_string)[:10].values_list('username', flat=True))
         return JsonResponse({"usernames": user_list})
 
     return JsonResponse({"usernames": []})
 
 
-#Create auto-complete feature when tagging a user in a post, comment, or comment-reply.
+def user_search_view(request):
+    searching_user = request.user
+    search_string = request.GET.get('q')
+    if search_string:
+        return user_search_results(searching_user, search_string)
+    else:
+        user_list = RecentlySearched.objects.filter(searching_user=searching_user).exclude(searched_user=searching_user)
+        # user_query = list(User.objects.filter(id__in=user_list).values('id', 'username', 'first_name', 'last_name'))
+        return render(request, 'post/search.html', {'user_list': user_list})
+
+
+def user_search_results(searching_user, search_string):
+    user_list = list(RecentlySearched.objects.filter(Q(searching_user=searching_user) & (Q(searched_user__username__istartswith=search_string) | Q(searched_user__first_name__istartswith=search_string) | Q(searched_user__last_name__istartswith=search_string))).values_list('searched_user__id', flat=True)[:15])
+
+    if len(user_list) < 15:
+        additional_list = list(Follow.objects.filter(Q(user_from=searching_user) & (Q(user_to__username__istartswith=search_string) | Q(user_to__first_name__istartswith=search_string) | Q(user_to__last_name__istartswith=search_string))).exclude(user_to__id__in=user_list).values_list('user_to__id', flat=True)[:15 - len(user_list)])
+        user_list.extend(additional_list)
+
+    if len(user_list) < 15:
+        additional_list = list(User.objects.filter((Q(username__istartswith=search_string) | Q(first_name__istartswith=search_string) | Q(last_name__istartswith=search_string))).exclude(id=searching_user.id, id__in=user_list).values_list('id', flat=True)[:15 - len(user_list)])
+        user_list.extend(additional_list)
+
+    user_query = list(User.objects.filter(id__in=user_list)[:15].values('id', 'username', 'first_name', 'last_name'))
+    return JsonResponse(user_query, safe=False)
+
+
 
 
 

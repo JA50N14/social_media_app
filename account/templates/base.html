@@ -18,7 +18,7 @@
             <ul>
                 {% if request.user.is_authenticated %}
                     <li><a href="{% url 'post:feed' %}">Home</a></li>
-                    <li><a href="#">Search</a></li>
+                    <li><a href="{% url 'post:user_search_view' %}">Search</a></li>
                     <li><a href="{% url 'post:notifications_view' request.user.id %}">Notifications</a></li>
                     <li><a href="{% url 'post:messages_view' request.user.id %}">Messages</a></li>
                     <li><a href="{% url 'post:my_profile' %}">Profile</a></li>
