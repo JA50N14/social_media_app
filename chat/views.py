@@ -2,9 +2,11 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models import Q
 from . models import Chat, Message, ChatViewed
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
+@login_required
 def chat_view(request, user_id):
     chat_with = get_object_or_404(User, id=user_id)
     try:

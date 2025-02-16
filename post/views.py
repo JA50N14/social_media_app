@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from . models import Post, Like, Comment, Follow, TagNotification, UserTagged, RecentlySearched
 from chat.models import Chat, Message, ChatViewed
-from account.models import Profile
+from accounts.models import Profile
 from . forms import PostCreateForm, CommentCreateForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
@@ -11,11 +11,13 @@ from django.db.models import Exists, OuterRef, Q, F, Subquery, Case, When, Value
 from django.db.models.functions import Substr
 from django.utils import timezone
 import re
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
 #Work on the notifications.html - You need to bold links that have not been clicked and unbold links that have been clicked.
 
+@login_required
 def post_create(request):
     if request.method == 'POST':
         form = PostCreateForm(request.POST, request.FILES)
@@ -30,6 +32,7 @@ def post_create(request):
     return render(request, 'post/post_create.html', {'form': form})
 
 
+@login_required
 def post_detail(request, post_id, user_tagged_id=None):
     post = get_object_or_404(Post, pk=post_id)
     user = post.user
@@ -47,6 +50,7 @@ def post_detail(request, post_id, user_tagged_id=None):
     return render(request, 'post/post_detail.html', {'post': post, 'user': user, 'comments': comments, 'post_like_status': post_like_status})
 
 
+@login_required
 def post_comment_add(request, post_id):
     if request.method == 'POST':
         post = get_object_or_404(Post, id=post_id)
@@ -63,6 +67,7 @@ def post_comment_add(request, post_id):
     return render(request, 'partials/comment_form.html', {'form': form, 'post_id': post_id})
 
 
+@login_required
 def post_like(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     user_like_post = post.likes.filter(user=request.user).first()
@@ -81,6 +86,7 @@ def post_like(request, post_id):
     return render(request, 'partials/post_like.html', {'post': post, 'post_like_status': post_like_status})
 
 
+@login_required
 def comment_like(request, post_id, comment_id):
     post = get_object_or_404(Post, id=post_id)
     comment = get_object_or_404(Comment, id=comment_id)
@@ -94,6 +100,7 @@ def comment_like(request, post_id, comment_id):
     return render(request, 'partials/comment_like.html', {'post': post, 'comment': comment})
 
 
+@login_required
 def comment_reply(request, post_id, comment_id):
     if request.method == 'POST':
         comment_reply_form = CommentCreateForm(request.POST)
@@ -111,6 +118,7 @@ def comment_reply(request, post_id, comment_id):
     return render(request, 'partials/comment_reply_form.html', {'post_id': post_id, 'comment_id': comment_id, 'comment_reply_form': comment_reply_form})
 
 
+@login_required
 def comment_replies_view(request, post_id, comment_id):
     comment = get_object_or_404(Comment, id=comment_id)
     post = get_object_or_404(Post, id=post_id)
@@ -120,6 +128,7 @@ def comment_replies_view(request, post_id, comment_id):
     return render(request, 'partials/comment_replies.html', {'post': post, 'all_comment_replies': all_comment_replies})
 
 
+@login_required
 def my_profile_view(request):
     user = request.user
     all_posts = Post.objects.filter(user=user).order_by("-created")
@@ -136,6 +145,7 @@ def my_profile_view(request):
     return render(request, 'post/my_profile.html', {'page_obj': page_obj, 'profile': profile, 'post_count': post_count, 'follower_count': follower_count, 'following_count': following_count})
 
 
+@login_required
 def detail_profile_view(request, user_id):
     User = get_user_model()
     user = get_object_or_404(User, id=user_id)
@@ -159,6 +169,7 @@ def add_to_recently_searched(searching_user, searched_user):
     RecentlySearched.objects.update_or_create(searching_user=searching_user, searched_user=searched_user, defaults={'last_viewed': timezone.now})
 
 
+@login_required
 def follow_unfollow_user(request, user_id, other_user_id):
     User = get_user_model()
     user = get_object_or_404(User, id=user_id)
@@ -173,6 +184,7 @@ def follow_unfollow_user(request, user_id, other_user_id):
     return render(request, 'partials/following.html', {'user_id': user_id, 'other_user_id': other_user_id, 'following_user': following_user, 'follower_count': follower_count})
 
 
+@login_required
 def followers_following_view(request, user_id, flag):
     User = get_user_model()
     user = get_object_or_404(User, id=user_id)
@@ -188,6 +200,7 @@ def followers_following_view(request, user_id, flag):
         return render(request, 'post/followers_following.html', {'user': user, 'following': following, 'follower_count': follower_count, 'following_count': following_count, 'flag': flag})
 
 
+@login_required
 def messages_view(request, user_id):
     User = get_user_model()
     user = get_object_or_404(User, id=user_id)
@@ -233,6 +246,7 @@ def message_search(request):
     return JsonResponse(user_query, safe=False)
 
 
+@login_required
 def feed(request):
     user=request.user
     following_users = Follow.objects.filter(user_from=user, following=True).values_list('user_to', flat=True)
@@ -248,6 +262,7 @@ def feed(request):
     return render(request, 'post/feed.html', {'page_obj': page_obj})
 
 
+@login_required
 def notifications_view(request, user_id):
     user = User.objects.get(id=user_id)
     TagNotification.objects.update_or_create(user=user, defaults={'notification_last_clicked': timezone.now})
@@ -302,6 +317,7 @@ def autocomplete_user_tags(request):
     return JsonResponse({"usernames": []})
 
 
+@login_required
 def user_search_view(request):
     searching_user = request.user
     search_string = request.GET.get('q')

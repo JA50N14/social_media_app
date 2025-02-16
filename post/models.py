@@ -66,7 +66,7 @@ class Comment(models.Model):
 
 class Like(models.Model):
     post = models.ForeignKey(Post, related_name='likes', on_delete=models.CASCADE, null=True, blank=True)
-    profile = models.ForeignKey('account.Profile', related_name='likes', on_delete=models.CASCADE, null=True, blank=True)
+    profile = models.ForeignKey('accounts.Profile', related_name='likes', on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='likes', on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, related_name='likes', on_delete=models.CASCADE, blank=True, null=True)
     like = models.BooleanField(default=False)

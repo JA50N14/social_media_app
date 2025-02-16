@@ -6,6 +6,7 @@ from post.models import TagNotification
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.forms import UserCreationForm
 from .forms import RegistrationForm, ProfileBioForm, ProfilePhotoForm, UserFirstLastNameForm, ProfileDateOfBirthForm, UsernameForm
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -28,6 +29,7 @@ def edit_profile(request):
     return render(request, 'settings/edit_profile.html')
 
 
+@login_required
 def edit_profile_photo(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == "POST":
@@ -40,6 +42,7 @@ def edit_profile_photo(request):
     return render(request, 'settings/edit_profile_photo.html', {'form': form})
 
 
+@login_required
 def edit_first_last_name(request):
     user = request.user
     if request.method == "POST":
@@ -52,6 +55,7 @@ def edit_first_last_name(request):
     return render(request, 'settings/edit_first_last_name.html', {'form': form})
 
 
+@login_required
 def edit_username(request):
     if request.method == "POST":
         form = UsernameForm(data=request.POST, instance=request.user)
@@ -63,6 +67,7 @@ def edit_username(request):
     return render(request, 'settings/edit_username.html', {'form': form})
 
 
+@login_required
 def edit_profile_bio(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == "POST":
@@ -75,6 +80,7 @@ def edit_profile_bio(request):
     return render(request, 'settings/edit_bio.html', {'form': form})
 
 
+@login_required
 def edit_date_of_birth(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == "POST":
